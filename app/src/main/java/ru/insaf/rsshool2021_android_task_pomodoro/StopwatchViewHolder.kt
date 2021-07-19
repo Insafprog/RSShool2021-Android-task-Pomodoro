@@ -11,11 +11,11 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.recyclerview.widget.RecyclerView
 import ru.insaf.rsshool2021_android_task_pomodoro.databinding.StopwatchItemBinding
 
-private const val START_TIME: String = "00:00:00:00"
+private const val START_TIME: String = "00:00:00"
 private const val START_BUTTON: String = "Start"
 private const val PAUSE_BUTTON: String = "Pause"
 private const val RESET_BUTTON: String = "Reset"
-private const val UNIT_TEN_MS = 10L
+private const val UNIT_TEN_MS = 1000L
 
 
 class StopwatchViewHolder(
@@ -141,9 +141,8 @@ private fun Long.displayTime(): String {
     val h = this / 1000 / 3600
     val m = this / 1000 % 3600 / 60
     val s = this / 1000 % 60
-    val ms = this % 1000 /10
 
-    return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}:${displaySlot(ms)}"
+    return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}"
 }
 
 private fun displaySlot(count: Long): String {
