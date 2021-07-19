@@ -70,6 +70,17 @@ class DataSource(resources: Resources) {
         }
     }
 
+    fun updateCurrentMs(stopwatch: Stopwatch, ms: Long) {
+        stopwatchLiveData.value?.let {
+            it.forEach { sw ->
+                if (sw.id == stopwatch.id){
+                    sw.currentMs -= ms
+                }
+            }
+            stopwatchLiveData.postValue(it)
+        }
+    }
+
     val stopwatchList: LiveData<List<Stopwatch>>
         get() = stopwatchLiveData
 

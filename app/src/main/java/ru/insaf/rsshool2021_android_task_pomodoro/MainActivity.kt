@@ -59,19 +59,4 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
     override fun restartStopwatch(stopwatch: Stopwatch) {
         stopwatchViewModel.returnStopwatch(stopwatch)
     }
-
-//    private fun changeStopwatch(id: Int, status: StopwatchStatus, allPause: Boolean = false) {
-//        val newTimers = mutableListOf<Stopwatch>()
-//        stopwatches.forEach {
-//            if (it.id == id) {
-//                newTimers.add(Stopwatch(it.id, it.totalMs, it.currentMs, status))
-//            }
-//            else {
-//                newTimers.add(it)
-//            }
-//        }
-//        stopwatchAdapter.submitList(stopwatches)
-//        stopwatches.clear()
-//        stopwatches.addAll(newTimers)
-//    }
 }

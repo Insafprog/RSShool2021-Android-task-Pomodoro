@@ -3,6 +3,10 @@ package ru.insaf.rsshool2021_android_task_pomodoro
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class StopwatchViewModel(private val dataSource: DataSource): ViewModel() {
 
@@ -37,6 +41,21 @@ class StopwatchViewModel(private val dataSource: DataSource): ViewModel() {
 
     fun returnStopwatch(stopwatch: Stopwatch) {
         dataSource.returnStopwatch(stopwatch)
+    }
+
+    private fun getTime(stopwatch: Stopwatch) {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                delay(1000)
+                if (stopwatch.status == StopwatchStatus.STARTED && stopwatch.currentMs > 1000)
+                    dataSource.updateCurrentMs(stopwatch, 1000)
+                else if (stopwatch.status == StopwatchStatus.STARTED) {
+                    dataSource.finishStopwatch(stopwatch)
+                    break
+                }
+                else break
+            }
+        }
     }
 }
 

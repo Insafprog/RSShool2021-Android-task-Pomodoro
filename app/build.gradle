@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId "ru.insaf.rsshool2021_android_task_pomodoro"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
