@@ -3,6 +3,8 @@ package ru.insaf.rsshool2021_android_task_pomodoro
 import StopwatchAdapter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
+
 import androidx.recyclerview.widget.LinearLayoutManager
 import ru.insaf.rsshool2021_android_task_pomodoro.databinding.ActivityMainBinding
 
@@ -11,8 +13,10 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
     private lateinit var binding: ActivityMainBinding
 
     private val stopwatchAdapter = StopwatchAdapter(this)
-    private val stopwatches = mutableListOf<Stopwatch>()
     private var nextId = 0
+    private val stopwatchViewModel by viewModels<StopwatchViewModel> {
+        StopwatchViewModelFactory(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,37 +29,49 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
             adapter = stopwatchAdapter
         }
 
+        stopwatchViewModel.stopwatchLiveData.observe(this, {
+            it?.let {
+                stopwatchAdapter.submitList(it as MutableList<Stopwatch>)
+            }
+        })
+
         binding.bAdd.setOnClickListener {
-            stopwatches.add(Stopwatch(nextId++, binding.etMinutes.text.toString().toLong() * 1000, binding.etMinutes.text.toString().toLong() * 1000, StopwatchStatus.NEW))
-            stopwatchAdapter.submitList(stopwatches.toList())
+            stopwatchViewModel.insertStopwatch(nextId++, binding.etMinutes.text.toString().toLong() * 1000)
         }
     }
 
-    override fun start(id: Int) {
-        changeStopwatch(id, StopwatchStatus.STARTED)
+    override fun start(stopwatch: Stopwatch) {
+        stopwatchViewModel.startStopwatch(stopwatch)
     }
 
-    override fun pause(id: Int) {
-        changeStopwatch(id, StopwatchStatus.PAUSED)
+    override fun pause(stopwatch: Stopwatch) {
+        stopwatchViewModel.pauseStopwatch(stopwatch)
     }
 
-    override fun delete(id: Int) {
-        stopwatches.remove(stopwatches.find { it.id == id })
-        stopwatchAdapter.submitList(stopwatches.toList())
+    override fun delete(stopwatch: Stopwatch) {
+        stopwatchViewModel.removeStopwatch(stopwatch)
     }
 
-    private fun changeStopwatch(id: Int, status: StopwatchStatus, allPause: Boolean = false) {
-        val newTimers = mutableListOf<Stopwatch>()
-        stopwatches.forEach {
-            if (it.id == id) {
-                newTimers.add(Stopwatch(it.id, it.totalMs, it.currentMs, status))
-            }
-            else {
-                newTimers.add(it)
-            }
-        }
-        stopwatchAdapter.submitList(stopwatches)
-        stopwatches.clear()
-        stopwatches.addAll(newTimers)
+    override fun finish(stopwatch: Stopwatch) {
+        stopwatchViewModel.finishedStopwatch(stopwatch)
     }
+
+    override fun restartStopwatch(stopwatch: Stopwatch) {
+        stopwatchViewModel.returnStopwatch(stopwatch)
+    }
+
+//    private fun changeStopwatch(id: Int, status: StopwatchStatus, allPause: Boolean = false) {
+//        val newTimers = mutableListOf<Stopwatch>()
+//        stopwatches.forEach {
+//            if (it.id == id) {
+//                newTimers.add(Stopwatch(it.id, it.totalMs, it.currentMs, status))
+//            }
+//            else {
+//                newTimers.add(it)
+//            }
+//        }
+//        stopwatchAdapter.submitList(stopwatches)
+//        stopwatches.clear()
+//        stopwatches.addAll(newTimers)
+//    }
 }
