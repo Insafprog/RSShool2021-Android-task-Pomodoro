@@ -2,7 +2,7 @@ package ru.insaf.rsshool2021_android_task_pomodoro
 
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.AnimationDrawable
-import android.os.CountDownTimer
+//import android.os.CountDownTimer
 import android.widget.ImageView
 import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
@@ -25,23 +25,18 @@ class StopwatchViewHolder(
     LifecycleOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
-    private var timer: CountDownTimer? = null
+    private var timer: TimerTask? = null
 
     init {
         lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
     }
 
     fun bind(stopwatch: Stopwatch) {
-        binding.timer.text = stopwatch.currentMs.displayTime()
 
-        if(stopwatch.status == StopwatchStatus.STARTED) {
-            startTimer(stopwatch, stopwatch.currentMs)
-        }
-        else if(stopwatch.status == StopwatchStatus.FINISHED) {
-            finishTimer(stopwatch)
-        }
-        else {
-            stopTimer(stopwatch)
+        when (stopwatch.status) {
+            StopwatchStatus.STARTED -> start(stopwatch)
+            StopwatchStatus.FINISHED -> finish(stopwatch)
+            else -> pause(stopwatch)
         }
 
         initButtonsListener(stopwatch)
@@ -52,19 +47,14 @@ class StopwatchViewHolder(
         binding.bTimer.setOnClickListener {
             when (stopwatch.status) {
                 StopwatchStatus.STARTED -> {
-                    listener.pause(stopwatch)
-                    stopTimer(stopwatch)
+                    start(stopwatch)
+
                 }
                 StopwatchStatus.PAUSED, StopwatchStatus.NEW -> {
-                    listener.start(stopwatch)
-                    startTimer(stopwatch, stopwatch.currentMs)
+                    pause(stopwatch)
                 }
                 StopwatchStatus.FINISHED -> {
-                    listener.restartStopwatch(stopwatch)
-                    binding.indicator.stopAnimation()
-                    binding.background.stopAnimation()
-                    binding.timer.text = stopwatch.currentMs.displayTime()
-                    binding.bTimer.text = START_BUTTON
+                    finish(stopwatch)
                 }
             }
         }
@@ -73,13 +63,39 @@ class StopwatchViewHolder(
         }
     }
 
+    private fun start(stopwatch: Stopwatch) {
+        startTimer(stopwatch)
+        binding.bTimer.text = PAUSE_BUTTON
+        binding.timer.text = stopwatch.currentMs.displayTime()
+        listener.start(stopwatch)
+        binding.indicator.startAnimation()
+        binding.background.stopAnimation()
+    }
+
+    private fun pause(stopwatch: Stopwatch) {
+        startTimer(stopwatch)
+        binding.bTimer.text = START_BUTTON
+        binding.timer.text = stopwatch.currentMs.displayTime()
+        listener.pause(stopwatch)
+        binding.indicator.stopAnimation()
+        binding.background.stopAnimation()
+    }
+
+    private fun finish(stopwatch: Stopwatch) {
+        startTimer(stopwatch)
+        binding.bTimer.text = RESET_BUTTON
+        binding.timer.text = stopwatch.currentMs.displayTime()
+        listener.finish(stopwatch)
+        binding.indicator.stopAnimation()
+        binding.background.startAnimation()
+    }
 
 
-    private fun startTimer(stopwatch: Stopwatch, period: Long) {
+    private fun startTimer(stopwatch: Stopwatch) {
         binding.bTimer.text = PAUSE_BUTTON
 
         timer?.cancel()
-        timer = getCountDownTimer(stopwatch, period)
+        timer = getCountDownTimer(stopwatch)
         timer?.start()
 
         binding.indicator.startAnimation()
@@ -94,14 +110,14 @@ class StopwatchViewHolder(
         binding.indicator.stopAnimation()
         binding.background.stopAnimation()
     }
-
-    private fun finishTimer(stopwatch: Stopwatch) {
-        listener.finish(stopwatch)
-        binding.timer.text = 0L.displayTime()
-        binding.bTimer.text = RESET_BUTTON
-        binding.indicator.stopAnimation()
-        binding.background.startAnimation()
-    }
+//
+//    private fun finishTimer(stopwatch: Stopwatch) {
+//        listener.finish(stopwatch)
+//        binding.timer.text = 0L.displayTime()
+//        binding.bTimer.text = RESET_BUTTON
+//        binding.indicator.stopAnimation()
+//        binding.background.startAnimation()
+//    }
 
     private fun ImageView.startAnimation() {
         isInvisible = false
@@ -115,19 +131,9 @@ class StopwatchViewHolder(
         (background as? AnimationDrawable)?.stop()
     }
 
-    private fun getCountDownTimer(stopwatch: Stopwatch, period: Long): CountDownTimer {
-        return object: CountDownTimer(period, UNIT_TEN_MS) {
-            override fun onTick(millisUntilFinished: Long) {
-                if (stopwatch.status == StopwatchStatus.STARTED) {
-                    binding.timer.text = millisUntilFinished.displayTime()
-                    stopwatch.currentMs = millisUntilFinished
-                }
-                else stopTimer(stopwatch)
-            }
-
-            override fun onFinish() {
-                finishTimer(stopwatch)
-            }
+    private fun getCountDownTimer(stopwatch: Stopwatch): TimerTask {
+        return  TimerTask {
+            listener.updateStopwatchCurrentMs(stopwatch, 100)
         }
     }
 

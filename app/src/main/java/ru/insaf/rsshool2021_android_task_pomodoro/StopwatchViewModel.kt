@@ -43,20 +43,10 @@ class StopwatchViewModel(private val dataSource: DataSource): ViewModel() {
         dataSource.returnStopwatch(stopwatch)
     }
 
-    private fun getTime(stopwatch: Stopwatch) {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                delay(1000)
-                if (stopwatch.status == StopwatchStatus.STARTED && stopwatch.currentMs > 1000)
-                    dataSource.updateCurrentMs(stopwatch, 1000)
-                else if (stopwatch.status == StopwatchStatus.STARTED) {
-                    dataSource.finishStopwatch(stopwatch)
-                    break
-                }
-                else break
-            }
-        }
+    fun updateStopwatchCurrentMs(stopwatch: Stopwatch, ms: Long) {
+        dataSource.updateCurrentMs(stopwatch, ms)
     }
+
 }
 
 class StopwatchViewModelFactory(private val context: Context) : ViewModelProvider.Factory {

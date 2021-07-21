@@ -59,4 +59,8 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
     override fun restartStopwatch(stopwatch: Stopwatch) {
         stopwatchViewModel.returnStopwatch(stopwatch)
     }
+
+    override fun updateStopwatchCurrentMs(stopwatch: Stopwatch, currentMs: Long) {
+        stopwatchViewModel.updateStopwatchCurrentMs(stopwatch, currentMs)
+    }
 }

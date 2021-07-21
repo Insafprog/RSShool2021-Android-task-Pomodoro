@@ -6,4 +6,5 @@ interface StopwatchListener {
     fun delete(stopwatch: Stopwatch)
     fun finish(stopwatch: Stopwatch)
     fun restartStopwatch(stopwatch: Stopwatch)
+    fun updateStopwatchCurrentMs(stopwatch: Stopwatch, ms: Long)
 }
