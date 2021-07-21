@@ -14,9 +14,11 @@ class TimerTask internal constructor(
 
     fun start() {
         job = CoroutineScope(Dispatchers.IO).launch {
-            delay(100)
-            if (isRunning.get()) {
-                tryAction()
+            while(isRunning.get()) {
+                delay(100)
+                if (isRunning.get()) {
+                    tryAction()
+                }
             }
         }
     }
