@@ -5,6 +5,7 @@ import android.graphics.drawable.AnimationDrawable
 import android.os.CountDownTimer
 import android.widget.ImageView
 import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -42,8 +43,11 @@ class StopwatchViewHolder(
             StopwatchStatus.FINISHED -> {
                 finishTimer(stopwatch)
             }
-            else -> {
+            StopwatchStatus.PAUSED -> {
                 stopTimer(stopwatch)
+            }
+            StopwatchStatus.NEW -> {
+                binding.cvProgress.isVisible = false
             }
         }
 
@@ -55,19 +59,13 @@ class StopwatchViewHolder(
         binding.bTimer.setOnClickListener {
             when (stopwatch.status) {
                 StopwatchStatus.STARTED -> {
-                    listener.pause(stopwatch)
                     stopTimer(stopwatch)
                 }
                 StopwatchStatus.PAUSED, StopwatchStatus.NEW -> {
-                    listener.start(stopwatch)
                     startTimer(stopwatch, stopwatch.currentMs)
                 }
                 StopwatchStatus.FINISHED -> {
-                    listener.restartStopwatch(stopwatch)
-                    binding.indicator.stopAnimation()
-                    binding.background.stopAnimation()
-                    binding.timer.text = stopwatch.currentMs.displayTime()
-                    binding.bTimer.text = START_BUTTON
+                    returnTimer(stopwatch)
                 }
             }
         }
@@ -77,10 +75,11 @@ class StopwatchViewHolder(
     }
 
     private fun startTimer(stopwatch: Stopwatch, period: Long) {
-        binding.bTimer.text = PAUSE_BUTTON
         generateCV(stopwatch)
+        listener.start(stopwatch)
+        binding.bTimer.text = PAUSE_BUTTON
 
-        binding.bTimer
+        binding.cvProgress.isVisible = true
         timer?.cancel()
         timer = getCountDownTimer(stopwatch, period)
         timer?.start()
@@ -90,9 +89,10 @@ class StopwatchViewHolder(
     }
 
     private fun stopTimer(stopwatch: Stopwatch) {
-        binding.bTimer.text = START_BUTTON
-
         generateCV(stopwatch)
+        listener.pause(stopwatch)
+        binding.bTimer.text = START_BUTTON
+        binding.cvProgress.isVisible = true
         timer?.cancel()
 
         binding.indicator.stopAnimation()
@@ -102,11 +102,23 @@ class StopwatchViewHolder(
     private fun finishTimer(stopwatch: Stopwatch) {
         generateCV(stopwatch)
         listener.finish(stopwatch)
+        binding.cvProgress.isVisible = true
         binding.timer.text = 0L.displayTime()
         binding.bTimer.text = RESET_BUTTON
         binding.indicator.stopAnimation()
         binding.background.startAnimation()
         stopwatch.startTime = null
+    }
+
+    private fun returnTimer(stopwatch: Stopwatch) {
+        generateCV(stopwatch)
+        listener.restartStopwatch(stopwatch)
+        binding.cvProgress.isVisible = false
+        listener.restartStopwatch(stopwatch)
+        binding.indicator.stopAnimation()
+        binding.background.stopAnimation()
+        binding.timer.text = stopwatch.currentMs.displayTime()
+        binding.bTimer.text = START_BUTTON
     }
 
     private fun ImageView.startAnimation() {
