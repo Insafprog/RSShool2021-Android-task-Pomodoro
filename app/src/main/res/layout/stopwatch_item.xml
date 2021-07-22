@@ -35,6 +35,16 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/blinking_circle" />
 
+        <ru.insaf.rsshool2021_android_task_pomodoro.CustomView
+            android:id="@+id/cvProgress"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            app:custom_color="@color/orange_700"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bTimer"
+            app:layout_constraintStart_toEndOf="@+id/timer"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/timer"
             android:layout_width="wrap_content"

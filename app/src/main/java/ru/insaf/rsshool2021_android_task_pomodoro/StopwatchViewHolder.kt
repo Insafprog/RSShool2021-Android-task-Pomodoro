@@ -35,14 +35,16 @@ class StopwatchViewHolder(
     fun bind(stopwatch: Stopwatch) {
         binding.timer.text = stopwatch.currentMs.displayTime()
 
-        if(stopwatch.status == StopwatchStatus.STARTED) {
-            startTimer(stopwatch, stopwatch.currentMs)
-        }
-        else if(stopwatch.status == StopwatchStatus.FINISHED) {
-            finishTimer(stopwatch)
-        }
-        else {
-            stopTimer()
+        when (stopwatch.status) {
+            StopwatchStatus.STARTED -> {
+                startTimer(stopwatch, stopwatch.currentMs)
+            }
+            StopwatchStatus.FINISHED -> {
+                finishTimer(stopwatch)
+            }
+            else -> {
+                stopTimer(stopwatch)
+            }
         }
 
         initButtonsListener(stopwatch)
@@ -54,7 +56,7 @@ class StopwatchViewHolder(
             when (stopwatch.status) {
                 StopwatchStatus.STARTED -> {
                     listener.pause(stopwatch)
-                    stopTimer()
+                    stopTimer(stopwatch)
                 }
                 StopwatchStatus.PAUSED, StopwatchStatus.NEW -> {
                     listener.start(stopwatch)
@@ -76,7 +78,9 @@ class StopwatchViewHolder(
 
     private fun startTimer(stopwatch: Stopwatch, period: Long) {
         binding.bTimer.text = PAUSE_BUTTON
+        generateCV(stopwatch)
 
+        binding.bTimer
         timer?.cancel()
         timer = getCountDownTimer(stopwatch, period)
         timer?.start()
@@ -85,9 +89,10 @@ class StopwatchViewHolder(
         binding.background.stopAnimation()
     }
 
-    private fun stopTimer() {
+    private fun stopTimer(stopwatch: Stopwatch) {
         binding.bTimer.text = START_BUTTON
 
+        generateCV(stopwatch)
         timer?.cancel()
 
         binding.indicator.stopAnimation()
@@ -95,11 +100,13 @@ class StopwatchViewHolder(
     }
 
     private fun finishTimer(stopwatch: Stopwatch) {
+        generateCV(stopwatch)
         listener.finish(stopwatch)
         binding.timer.text = 0L.displayTime()
         binding.bTimer.text = RESET_BUTTON
         binding.indicator.stopAnimation()
         binding.background.startAnimation()
+        stopwatch.startTime = null
     }
 
     private fun ImageView.startAnimation() {
@@ -117,20 +124,31 @@ class StopwatchViewHolder(
     private fun getCountDownTimer(stopwatch: Stopwatch, period: Long): CountDownTimer {
         return object: CountDownTimer(period, UNIT_TEN_MS) {
             override fun onTick(millisUntilFinished: Long) {
-                val time = Date().time - (stopwatch.startTime?:0)
                 if (stopwatch.status == StopwatchStatus.STARTED) {
-                    if (time >= stopwatch.currentMs) {
+                    generateCV(stopwatch){
                         this.cancel()
                         this.onFinish()
                     }
-                    else binding.timer.text = (stopwatch.currentMs - time).displayTime()
                 }
-                else stopTimer()
+                else stopTimer(stopwatch)
             }
 
             override fun onFinish() {
                 finishTimer(stopwatch)
             }
+        }
+    }
+
+    private fun generateCV(stopwatch: Stopwatch, func:() -> Unit = {}) {
+        val time = Date().time - (stopwatch.startTime?:Date().time)
+        if (time >= stopwatch.currentMs) {
+            func()
+        }
+        else {
+            binding.timer.text = (stopwatch.currentMs - time).displayTime()
+            binding.cvProgress.setTime(stopwatch.totalMs, time + stopwatch.totalMs - stopwatch.currentMs)
+            stopwatch.currentMs = stopwatch.currentMs - Date().time + (stopwatch.startTime?:0)
+            stopwatch.startTime = Date().time
         }
     }
 

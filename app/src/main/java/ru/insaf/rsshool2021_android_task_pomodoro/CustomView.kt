@@ -17,7 +17,6 @@ class CustomView @JvmOverloads constructor(
     private var periodMs = 0L
     private var currentMs = 0L
     private var color = 0
-    private var style = FILL
     private val paint = Paint()
 
     init {
@@ -29,19 +28,17 @@ class CustomView @JvmOverloads constructor(
                 0
             )
             color = styledAttrs.getColor(R.styleable.CustomView_custom_color, Color.RED)
-            style = styledAttrs.getInt(R.styleable.CustomView_custom_style, FILL)
             styledAttrs.recycle()
         }
 
         paint.color = color
-        paint.style = if (style == FILL) Paint.Style.FILL else Paint.Style.STROKE
         paint.strokeWidth = 5F
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (periodMs == 0L || currentMs == 0L) return
-        val startAngel = (((currentMs % periodMs).toFloat() / periodMs) * 360)
+        val angel = periodMs.toFloat() / currentMs * 360
 
         canvas.drawArc(
             0f,
@@ -49,25 +46,19 @@ class CustomView @JvmOverloads constructor(
             width.toFloat(),
             height.toFloat(),
             -90f,
-            startAngel,
+            angel,
             true,
             paint
         )
     }
 
     /**
-     * Set lasted milliseconds
+     * Set time
      */
-    fun setCurrent(current: Long) {
+    fun setTime(current: Long ,period: Long) {
         currentMs = current
-        invalidate()
-    }
-
-    /**
-     * Set time period
-     */
-    fun setPeriod(period: Long) {
         periodMs = period
+        invalidate()
     }
 
     private companion object {
