@@ -10,12 +10,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.recyclerview.widget.RecyclerView
 import ru.insaf.rsshool2021_android_task_pomodoro.databinding.StopwatchItemBinding
+import java.util.*
 
 private const val START_TIME: String = "00:00:00"
 private const val START_BUTTON: String = "Start"
 private const val PAUSE_BUTTON: String = "Pause"
 private const val RESET_BUTTON: String = "Reset"
-private const val UNIT_TEN_MS = 1000L
+private const val UNIT_TEN_MS = 100L
 
 
 class StopwatchViewHolder(
@@ -41,7 +42,7 @@ class StopwatchViewHolder(
             finishTimer(stopwatch)
         }
         else {
-            stopTimer(stopwatch)
+            stopTimer()
         }
 
         initButtonsListener(stopwatch)
@@ -53,7 +54,7 @@ class StopwatchViewHolder(
             when (stopwatch.status) {
                 StopwatchStatus.STARTED -> {
                     listener.pause(stopwatch)
-                    stopTimer(stopwatch)
+                    stopTimer()
                 }
                 StopwatchStatus.PAUSED, StopwatchStatus.NEW -> {
                     listener.start(stopwatch)
@@ -84,7 +85,7 @@ class StopwatchViewHolder(
         binding.background.stopAnimation()
     }
 
-    private fun stopTimer(stopwatch: Stopwatch) {
+    private fun stopTimer() {
         binding.bTimer.text = START_BUTTON
 
         timer?.cancel()
@@ -116,11 +117,15 @@ class StopwatchViewHolder(
     private fun getCountDownTimer(stopwatch: Stopwatch, period: Long): CountDownTimer {
         return object: CountDownTimer(period, UNIT_TEN_MS) {
             override fun onTick(millisUntilFinished: Long) {
+                val time = Date().time - (stopwatch.startTime?:0)
                 if (stopwatch.status == StopwatchStatus.STARTED) {
-                    binding.timer.text = millisUntilFinished.displayTime()
-                    stopwatch.currentMs = millisUntilFinished
+                    if (time >= stopwatch.currentMs) {
+                        this.cancel()
+                        this.onFinish()
+                    }
+                    else binding.timer.text = (stopwatch.currentMs - time).displayTime()
                 }
-                else stopTimer(stopwatch)
+                else stopTimer()
             }
 
             override fun onFinish() {

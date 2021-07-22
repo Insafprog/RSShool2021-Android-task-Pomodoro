@@ -3,6 +3,7 @@ package ru.insaf.rsshool2021_android_task_pomodoro
 import android.content.res.Resources
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import java.util.*
 
 class DataSource(resources: Resources) {
     private val stopwatchLiveData = MutableLiveData<List<Stopwatch>>()
@@ -30,7 +31,10 @@ class DataSource(resources: Resources) {
     fun startStopwatch(stopwatch: Stopwatch) {
         stopwatchLiveData.value?.let {
             it.forEach { sw ->
-                if (sw.id == stopwatch.id) sw.status = StopwatchStatus.STARTED
+                if (sw.id == stopwatch.id){
+                    sw.status = StopwatchStatus.STARTED
+                    sw.startTime = Date().time
+                }
                 else if (sw.status == StopwatchStatus.STARTED) sw.status = StopwatchStatus.PAUSED
             }
             stopwatchLiveData.postValue(it)

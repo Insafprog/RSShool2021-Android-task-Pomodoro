@@ -11,6 +11,7 @@ class StopwatchViewModel(private val dataSource: DataSource): ViewModel() {
     fun insertStopwatch(stopwatchId: Int, stopwatchTotalMs: Long) {
         val newStopwatch = Stopwatch(
             stopwatchId,
+            null,
             stopwatchTotalMs,
             stopwatchTotalMs,
             StopwatchStatus.NEW
